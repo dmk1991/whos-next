@@ -75,12 +75,18 @@ async def played(ctx, player):
 @bot.command()
 async def register(ctx):
     id = "<@%s>" % (ctx.author.id)
-    connection.cursor() \
-        .execute('INSERT INTO users (id, last_picked) values (?,"N/A")', [id]) \
-        
-    connection.commit()
+    record_exists = connection.cursor() \
+        .execute('SELECT * FROM users WHERE id = ?', [id]) \
+        .fetchone()
 
-    await ctx.send("%s registered" % (id))
+    if record_exists is None:
+        connection.cursor() \
+            .execute('INSERT INTO users (id, last_picked) values (?,"N/A")', [id]) \
+
+        connection.commit()
+        await ctx.send("%s registered" % (id))
+    else:
+        await ctx.send("%s is already registered" % (id))
 
 
 @bot.command()
